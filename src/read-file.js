@@ -8,14 +8,14 @@ module.exports = (receivedPath) => {
     validatePath(receivedPath)
         .then((elements) => {
             console.log(elements.message.green);
-            validateDoc(elements.validPath)
+            /*validateDoc(elements.validPath)
                 .then((elements) => {
                     console.log(elements.message.yellow)
                 })
                 .catch((message) => {
                     console.log(message)
-                })
-        })
+                }) */
+        }) 
         .catch((message) => {
             console.log(message.red);
         })
