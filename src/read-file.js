@@ -92,6 +92,7 @@ const filterMdFiles = (routes) => {
 
 // read the file
 let readReceivedFile = (routes) => {
+    if(routes.length > 0) {
     let linksFiltered = []
     routes.forEach((route) => {
         fs.readFile(route, 'utf-8', (err, data) => {
@@ -107,6 +108,8 @@ let readReceivedFile = (routes) => {
                     })
                 })
                 console.log(linksFiltered)
+            } else {
+                console.log(('there are no MD files in: ' + route).yellow)
             }
 
         })
@@ -116,6 +119,9 @@ let readReceivedFile = (routes) => {
 
 
     });
+} else {
+    console.log(('There are no MD files in the directory').yellow)
+}
 }
 
 
