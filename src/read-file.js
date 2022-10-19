@@ -1,23 +1,28 @@
 const colors = require('colors');
-const fs = require ('fs');
+const fs = require('fs');
 const path = require('path');
 const http = require('http');
+let pathDirsList = []
+let mdDirFiles = []
+
 
 module.exports = (receivedPath) => {
     // validates if the received path is absolute
     validateAbsoluteRoute(receivedPath)
         .then((realPath) => checkDirOrFile(realPath))
-        .then((message => console.log(message)))
+        .then((route => readReceivedFile(route)))
+
         .catch((error) => console.log(error))
-    
-    }
+}
 
 
 // promise to return absolute path always
 const validateAbsoluteRoute = (route) => {
-    return new Promise((resolve) => {
-        if (path.isAbsolute(route)===true) {
-            resolve (route)
+    return new Promise((resolve, reject) => {
+        if (route === undefined) {
+            reject('Please write a path'.red)
+        } else if (path.isAbsolute(route) === true) {
+            resolve(route)
         } else {
             resolve(turnAbsolute(route))
         }
@@ -25,50 +30,95 @@ const validateAbsoluteRoute = (route) => {
 }
 
 // turns relative path into absoulte path
-const turnAbsolute = (relativePath) => path.resolve() + '\\' + relativePath;
-
-// function to filter dir .md files
-const filterMdFiles = (route) => {
-return new Promise((resolve, reject) => {
-    fs.readdir(route, (err, files) => {
-        if (err) {
-            reject(err)
-        } else {
-        resolve (files.filter((file) =>  path.extname(file) === '.md'))
-        }
-    })
-})
-}
-
+const turnAbsolute = (relativePath) => path.resolve(__dirname, relativePath);
 
 // promise to validate the route exists and validate if it's a dir or a .md file
 const checkDirOrFile = (route) => {
-    return new Promise ((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         fs.lstat(route, (err, stats) => {
             if (err) {
-                console.log('Couldn\'t find: '.red + route.brightRed)
+                reject('Couldn\'t find: '.red + route.brightRed)
             } else {
-            if (stats.isFile() === true) {
-                resolve(route)
-            } else if (stats.isDirectory() === true) {
-                filterMdFiles(route)
-                .then ((files) => {
-                    if (files.length === 0) {
-                        resolve('There are no .md files in the directory'.red)
-                    } else {
-                        let absoluteFiles = []
-                        for (let i = 0; i<files.length; i++) {
-                            absoluteFiles.push(turnAbsolute(files[i]))
-                        }
-                        resolve(absoluteFiles)
-                        
-                    }
+                if (stats.isFile() === true) {
+                    validationMdFile(route)
+                        .then((res) => resolve([res]))
+                        .catch((res) => reject(res.red))
+                } else if (stats.isDirectory() === true) {
+                    functionLoopDir([route])
+                    pathDirsList.unshift(route)
+                    filterMdFiles(pathDirsList)
+                    resolve(mdDirFiles.flat())
+                }
+            }
+        })
+    })
+}
+
+// function to loop into every dir
+const functionLoopDir = (routes) => {
+    routes.forEach(route => {
+        const readDirectoryFirst = fs.readdirSync(route);
+        const filterThroughEveryDir = readDirectoryFirst.filter(res => fs.lstatSync(route + '\\' + res).isDirectory());
+        const innerFolderPaths = filterThroughEveryDir.map(folder => route + '\\' + folder);
+        if (innerFolderPaths === 0) {
+            return
+        } else {
+            innerFolderPaths.forEach(folder => pathDirsList.push(folder));
+            functionLoopDir(innerFolderPaths);
+        }
+    });
+}
+
+// validates it's a .md file
+let validationMdFile = (route) => {
+    return new Promise((resolve, reject) => {
+        if (path.extname(route) === '.md') {
+            resolve(route)
+        } else {
+            reject('Try with a .md file')
+        }
+    })
+}
+
+// function to filter dir .md files
+const filterMdFiles = (routes) => {
+    routes.forEach(route => {
+        let dirList = fs.readdirSync(route);
+        let dirListWithPath = dirList.map(file => route + '\\' + file)
+        let filterDirFiles = dirListWithPath.filter(file => path.extname(file) === '.md')
+        mdDirFiles.push(filterDirFiles)
+    })
+}
+
+// read the file
+let readReceivedFile = (routes) => {
+    let linksFiltered = []
+    routes.forEach((route) => {
+        fs.readFile(route, 'utf-8', (err, data) => {
+            const regExp = /\[(.+)\]\((https?:\/\/.+)\)/gi;
+            let arrayLinks = [...data.matchAll(regExp)]
+
+            if (arrayLinks.length > 0) {
+                arrayLinks.forEach(link => {
+                    linksFiltered.push({
+                        href: link[2],
+                        text: link[1],
+                        file: route
+                    })
                 })
+                console.log(linksFiltered)
             }
-            }
+
         })
-        })
-    }
+
+
+
+
+
+    });
+}
+
+
 
 /*
 module.exports = (receivedPath) => {
@@ -106,30 +156,14 @@ let newPath = pathTry + '\\' + receivedPath
 readFile(newPath);
 // console.log(path.isAbsolute(receivedPath)) */
 
-
-// Validates de path to be a MD doc
-let validateMDPath = (newPath) => {
-    return new Promise((resolve, reject) => {
-        if (path.extname(newPath)===undefined) {
-            reject ('Try being more specific')
-        } else if (path.extname(newPath) !== '.md') {
-            reject ('Invalid path, try again')
-        } else {
-            resolve ({
-                message: 'Correct path!',
-                validPath: newPath
-            })
-        }
-})}
-
 // reads the doc and transforms the content to a string
-let validateDoc = (validPath) => {
-    return new Promise ((resolve, reject) => {
-        let data= fs.readFileSync(validPath).toString();
+let readMdFile = (validPath) => {
+    return new Promise((resolve, reject) => {
+        let data = fs.readFileSync(validPath).toString();
         if (data === undefined) {
-            reject ('couldn\'t find the path, please try again')
+            reject('couldn\'t find the path, please try again')
         } else {
-            resolve ({
+            resolve({
                 message: 'Reading data',
                 links: data.split(/\n|\r|\s/)
 
