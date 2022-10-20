@@ -10,7 +10,8 @@ module.exports = (receivedPath) => {
     // validates if the received path is absolute
     validateAbsoluteRoute(receivedPath)
         .then((realPath) => checkDirOrFile(realPath))
-        .then((route => readReceivedFile(route)))
+         .then((route) => console.log('final', route))
+        // .then((route => readReceivedFile(route)))
 
         .catch((error) => console.log(error))
 }
@@ -44,10 +45,10 @@ const checkDirOrFile = (route) => {
                         .then((res) => resolve([res]))
                         .catch((res) => reject(res.red))
                 } else if (stats.isDirectory() === true) {
-                    functionLoopDir([route])
-                    pathDirsList.unshift(route)
+                     resolve(functionLoopDir(route))
+                    /*pathDirsList.unshift(route)
                     filterMdFiles(pathDirsList)
-                    resolve(mdDirFiles.flat())
+                    resolve(mdDirFiles.flat()) */
                 }
             }
         })
@@ -55,19 +56,37 @@ const checkDirOrFile = (route) => {
 }
 
 // function to loop into every dir
-const functionLoopDir = (routes) => {
-    routes.forEach(route => {
-        const readDirectoryFirst = fs.readdirSync(route);
-        const filterThroughEveryDir = readDirectoryFirst.filter(res => fs.lstatSync(route + '\\' + res).isDirectory());
-        const innerFolderPaths = filterThroughEveryDir.map(folder => route + '\\' + folder);
-        if (innerFolderPaths === 0) {
-            return
-        } else {
-            innerFolderPaths.forEach(folder => pathDirsList.push(folder));
-            functionLoopDir(innerFolderPaths);
-        }
-    });
-}
+const functionLoopDir = (route, oldValue) => { 
+    // routes.forEach(route => {
+        let newTryLoop= []
+        if(oldValue){  newTryLoop = [...oldValue]}
+        console.log("ov", oldValue)
+          
+     
+         let readDirectoryFirst = fs.readdirSync(route);
+         const filterThroughEveryDir = readDirectoryFirst.filter(res => fs.lstatSync(route + '\\' + res).isDirectory());
+         const innerFolderPaths = filterThroughEveryDir.map(folder => route + '\\' + folder);
+         if (innerFolderPaths.length === 0) {
+ 
+             return
+         } else {
+             
+            
+         innerFolderPaths.forEach(folder => {
+            // console.log('no sale nadaaaa', innerFolderPaths)
+             // const innerFolderPaths = path.join(route, folder)
+             newTryLoop.push(folder)
+             functionLoopDir(folder, newTryLoop)
+              // functionLoopDir(folder)
+              })
+             
+            /* innerFolderPaths.forEach(folder => pathDirsList.push(folder));
+             functionLoopDir(innerFolderPaths); */
+         } 
+        //  console.log('uwu', newTryLoop)
+         return newTryLoop.flat()
+   // });
+ }
 
 // validates it's a .md file
 let validationMdFile = (route) => {
