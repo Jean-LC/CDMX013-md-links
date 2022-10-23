@@ -6,6 +6,8 @@
     "ecmaVersion": 8
   },
   "rules": {
+    "linebreak-style": 0,
+    "prefer-destructuring": 0,
     "no-const-assign": 1,
     "no-extra-semi": 0,
     "semi": 0,
