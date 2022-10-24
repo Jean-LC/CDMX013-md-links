@@ -1,125 +1,22 @@
 const colors = require('colors');
-const fs = require('fs');
-const path = require('path');
-const http = require('http');
-let pathDirsList = []
-let mdDirFiles = []
+const fn = require('./fn.js')
 
 
-module.exports = (receivedPath) => {
-    // validates if the received path is absolute
-    validateAbsoluteRoute(receivedPath)
-        .then((realPath) => checkDirOrFile(realPath))
-        .then((route => readReceivedFile(route)))
-
-        .catch((error) => console.log(error))
-}
-
-
-// promise to return absolute path always
-const validateAbsoluteRoute = (route) => {
+module.exports = (receivedPath, receivedCommand) => {
+    console.log(receivedCommand)
     return new Promise((resolve, reject) => {
-        if (route === undefined) {
-            reject('Please write a path'.red)
-        } else if (path.isAbsolute(route) === true) {
-            resolve(route)
+        if (receivedCommand === undefined) {
+            console.log('a')
+            fn.validateAbsoluteRoute(receivedPath)
+            .then((realPath) => fn.checkDirOrFile(realPath))
+            .then((route => fn.readReceivedFile(route)))
+            .then((arr) => resolve(arr))
+
+            .catch((error) => reject(error)) 
+        } else if ( receivedCommand === 'validate') {
+            console.log('b')
         } else {
-            resolve(turnAbsolute(route))
+            console.log('c')
         }
     })
-}
-
-// turns relative path into absoulte path
-const turnAbsolute = (relativePath) => path.resolve(__dirname, relativePath);
-
-// promise to validate the route exists and validate if it's a dir or a .md file
-const checkDirOrFile = (route) => {
-    return new Promise((resolve, reject) => {
-        fs.lstat(route, (err, stats) => {
-            if (err) {
-                reject('Couldn\'t find: '.red + route.brightRed)
-            } else {
-                if (stats.isFile() === true) {
-                    validationMdFile(route)
-                        .then((res) => resolve([res]))
-                        .catch((res) => reject(res.red))
-                } else if (stats.isDirectory() === true) {
-                    functionLoopDir([route])
-                    pathDirsList.unshift(route)
-                    filterMdFiles(pathDirsList)
-                    resolve(mdDirFiles.flat())
-                }
-            }
-        })
-    })
-}
-
-// function to loop into every dir
-const functionLoopDir = (routes) => {
-    routes.forEach(route => {
-        const readDirectoryFirst = fs.readdirSync(route);
-        const filterThroughEveryDir = readDirectoryFirst.filter(res => fs.lstatSync(route + '\\' + res).isDirectory());
-        const innerFolderPaths = filterThroughEveryDir.map(folder => route + '\\' + folder);
-        if (innerFolderPaths === 0) {
-            return
-        } else {
-            innerFolderPaths.forEach(folder => pathDirsList.push(folder));
-            functionLoopDir(innerFolderPaths);
-        }
-    });
-}
-
-// validates it's a .md file
-let validationMdFile = (route) => {
-    return new Promise((resolve, reject) => {
-        if (path.extname(route) === '.md') {
-            resolve(route)
-        } else {
-            reject('Try with a .md file')
-        }
-    })
-}
-
-// function to filter dir .md files
-const filterMdFiles = (routes) => {
-    routes.forEach(route => {
-        let dirList = fs.readdirSync(route);
-        let dirListWithPath = dirList.map(file => route + '\\' + file)
-        let filterDirFiles = dirListWithPath.filter(file => path.extname(file) === '.md')
-        mdDirFiles.push(filterDirFiles)
-    })
-}
-
-// read the file
-let readReceivedFile = (routes) => {
-    if(routes.length > 0) {
-    let linksFiltered = []
-    routes.forEach((route) => {
-        fs.readFile(route, 'utf-8', (err, data) => {
-            const regExp = /\[(.+)\]\((https?:\/\/.+)\)/gi;
-            let arrayLinks = [...data.matchAll(regExp)]
-
-            if (arrayLinks.length > 0) {
-                arrayLinks.forEach(link => {
-                    linksFiltered.push({
-                        href: link[2],
-                        text: link[1],
-                        file: route
-                    })
-                })
-                console.log(linksFiltered)
-            } else {
-                console.log(('there are no MD files in: ' + route).yellow)
-            }
-
-        })
-
-
-
-
-
-    });
-} else {
-    console.log(('There are no MD files in the directory').yellow)
-}
 }
