@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const axios = require('axios');
 
 let pathDirsList = []
 let mdDirFiles = []
@@ -100,21 +101,38 @@ const readReceivedFile = (routes) => {
                             file: route
                         })
                     })
-                } else {
-                    linksFiltered.push('There are no links in: ' + route)
                 }
-            })
-            resolve(linksFiltered)
-        } else {
-            resolve('There are no MD files in the directory')
-        }
+            })    
+        } 
+        resolve(linksFiltered)
     })
 }
 
+const axiosValidation = (element) => {
+    return new Promise((resolve, reject) => {
+            axios({
+                url: element.href
+            }) .then((data) => {
+                    resolve({
+                        status: data.statusText + ': ' + data.status,
+                        href: element.href,
+                        text: element.text,
+                        file: element.file
+                    })    
+            })
+            .catch( () => resolve({
+                status: 'FAIL: 404',
+                href: element.href,
+                text: element.text,
+                file: element.file
+            }))
+    })      
+}
 
 // export functions
 module.exports = {
     validateAbsoluteRoute, 
     checkDirOrFile, 
-    readReceivedFile
+    readReceivedFile,
+    axiosValidation
 }
