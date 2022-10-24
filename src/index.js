@@ -1,7 +1,8 @@
 const readFile = require ('./read-file.js');
 let receivedPath = process.argv[2];
-let receivedCommand = process.argv[3]
+let firstCommand = process.argv[3];
+let secondCommand = process.argv[4];
 
 
-readFile(receivedPath, receivedCommand)
+readFile(receivedPath, firstCommand, secondCommand)
 .then ((message) => console.log(message));
