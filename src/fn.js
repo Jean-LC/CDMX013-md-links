@@ -137,7 +137,6 @@ const validateLinks = (arr) => {
         for (let i = 0; i < arr.length; i++) {
             arrFn.push(axiosValidation(arr[i]))
         }
-        console.log(arrFn)
         Promise.all(arrFn)
             .then((values) => resolve(values))
     })
