@@ -109,7 +109,7 @@ const readReceivedFile = (routes) => {
 }
 
 const axiosValidation = (element) => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
             axios({
                 url: element.href
             }) .then((data) => {
@@ -129,10 +129,65 @@ const axiosValidation = (element) => {
     })      
 }
 
+
+// returns list of links with validation
+const validateLinks = (arr) => {
+    return new Promise((resolve) => {
+        let arrFn = []
+        for (let i = 0; i < arr.length; i++) {
+            arrFn.push(axiosValidation(arr[i]))
+        }
+        console.log(arrFn)
+        Promise.all(arrFn)
+            .then((values) => resolve(values))
+    })
+}
+
+// returns stats of links
+const statsLinks = (arr, command) => {
+    let countLinks = []
+    let countFiles = new Set()
+    let countValidatedTrue = []
+    let countValidatedFalse = []
+    let finalArray = []
+
+    if (command) {
+        for (let i = 0; i < arr.length; i++) {
+            countLinks.push(arr[i].href)
+            countFiles.add(arr[i].file)
+            if (arr[i].status === 'FAIL: 404') {
+                countValidatedFalse.push(arr[i].status)
+            } else {
+                countValidatedTrue.push(arr[i].status)
+            }
+        }
+        finalArray = [
+            'files: ' + countFiles.size,
+            'links: ' + countLinks.length,
+            'OK links: ' + countValidatedTrue.length,
+            'Failed links: ' + countValidatedFalse.length
+        ]
+
+    } else {
+        for (let i = 0; i < arr.length; i++) {
+            countLinks.push(arr[i].href)
+            countFiles.add(arr[i].file)
+        }
+        finalArray = [
+            'files: ' + countFiles.size,
+            'links: ' + countLinks.length,
+        ]
+    }
+
+    return (finalArray)
+} 
+
 // export functions
 module.exports = {
     validateAbsoluteRoute, 
     checkDirOrFile, 
     readReceivedFile,
-    axiosValidation
+    axiosValidation,
+    validateLinks,
+    statsLinks
 }
