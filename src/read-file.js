@@ -4,21 +4,25 @@ const fn = require('./fn.js')
 
 
 module.exports = (receivedPath, firstCommand, secondCommand) => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         if (secondCommand) {
             getListOfLinks(receivedPath)
                 .then((links) => validateLinks(links))
                 .then((data) => resolve(statsLinks(data, secondCommand)))
+                .catch((error) => resolve(error))
         } else if (firstCommand === undefined) {
             getListOfLinks(receivedPath)
                 .then((links) => resolve(links))
+                .catch((error) => resolve(error))
         } else if (firstCommand === 'validate') {
             getListOfLinks(receivedPath)
                 .then((links) => validateLinks(links))
                 .then((data) => resolve(data))
+                .catch((error) => resolve(error))
         } else if (firstCommand === 'stats') {
             getListOfLinks(receivedPath)
                 .then((links) => resolve(statsLinks(links)))
+                .catch((error) => resolve(error))
         }
     })
 }
@@ -41,6 +45,7 @@ const validateLinks = (arr) => {
         for (let i = 0; i < arr.length; i++) {
             arrFn.push(fn.axiosValidation(arr[i]))
         }
+        console.log(arrFn)
         Promise.all(arrFn)
             .then((values) => resolve(values))
     })
