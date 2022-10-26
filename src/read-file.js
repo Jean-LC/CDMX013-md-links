@@ -11,12 +11,12 @@ module.exports = (receivedPath, firstCommand, secondCommand) => {
             getListOfLinks(receivedPath)
                 .then((links) => resolve(links))
                 .catch((error) => resolve(error))
-        } else if (firstCommand === '--validate') {
+        } else if (firstCommand === 'validate') {
             getListOfLinks(receivedPath)
                 .then((links) => fn.validateLinks(links))
                 .then((data) => resolve(data))
                 .catch((error) => resolve(error))
-        } else if (firstCommand === '--stats') {
+        } else if (firstCommand === 'stats') {
             getListOfLinks(receivedPath)
                 .then((links) => console.log(fn.statsLinks(links)))
                 .catch((error) => resolve(error))
