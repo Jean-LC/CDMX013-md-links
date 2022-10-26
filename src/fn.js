@@ -9,8 +9,9 @@ let mdDirFiles = []
  const validateAbsoluteRoute = (route) => {
     return new Promise((resolve, reject) => {
         if (route === undefined) {
-            reject('Please write a path'.red)
+            reject('Please write a path')
         } else if (path.isAbsolute(route) === true) {
+            console.log('b')
             resolve(route)
         } else {
             resolve(turnAbsolute(route))
@@ -27,7 +28,7 @@ const checkDirOrFile = (route) => {
     return new Promise((resolve, reject) => {
         fs.lstat(route, (err, stats) => {
             if (err) {
-                reject('Couldn\'t find: '.red + route.brightRed)
+                reject('Couldn\'t find: ' + route)
             } else {
                 if (stats.isFile() === true) {
                     validationMdFile(route)
