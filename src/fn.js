@@ -11,7 +11,6 @@ let mdDirFiles = []
         if (route === undefined) {
             reject('Please write a path')
         } else if (path.isAbsolute(route) === true) {
-            console.log('b')
             resolve(route)
         } else {
             resolve(turnAbsolute(route))

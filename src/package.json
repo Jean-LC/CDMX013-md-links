@@ -1,11 +1,11 @@
 {
-  "name": "jean-lc-md-links",
-  "version": "1.0.1",
+  "name": "@jean-lc/md-links",
+  "version": "1.0.0",
   "description": "cli tool to validate links in md files",
   "main": "bin./mdLinks",
   "bin": {
     "jean-lc-md-links": "bin/mdLinks",
-    "mdLinks" : "./bin/mdLinks"
+    "mdLinks": "bin/mdLinks"
   },
   "scripts": {
     "start": "node ./bin/mdLinks",
@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/Jean-LC/CDMX013-md-links#readme",
   "dependencies": {
-    "md-links": "^0.1.0"
+    "@jean-lc/md-links": "^1.0.0",
+    "md-links": "github:Jean-LC/CDMX013-md-links"
   }
 }
