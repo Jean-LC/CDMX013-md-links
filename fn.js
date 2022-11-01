@@ -21,6 +21,17 @@ let mdDirFiles = []
 // turns relative path into absoulte path
 const turnAbsolute = (relativePath) => path.resolve(__dirname, relativePath);
 
+// returns list of links
+const getListOfLinks = (path) => {
+    return new Promise((resolve, reject) => {
+        validateAbsoluteRoute(path)
+            .then((realPath) => checkDirOrFile(realPath))
+            .then((route => readReceivedFile(route)))
+            .then((arr) => resolve(arr))
+            .catch((error) => reject(error))
+    })
+}
+
 
 // promise to validate the route exists and validate if it's a dir or a .md file
 const checkDirOrFile = (route) => {
@@ -183,10 +194,7 @@ const statsLinks = (arr, command) => {
 
 // export functions
 module.exports = {
-    validateAbsoluteRoute, 
-    checkDirOrFile, 
-    readReceivedFile,
-    axiosValidation,
+    getListOfLinks,
     validateLinks,
     statsLinks
 }
