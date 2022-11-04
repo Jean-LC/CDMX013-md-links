@@ -131,12 +131,13 @@ const axiosValidation = (element) => {
                         file: element.file
                     })    
             })
-            .catch( () => resolve({
-                status: 'FAIL: 404',
+            .catch( (error) => {
+                resolve({
+                status: 'FAIL: ' + error.response.status,
                 href: element.href,
                 text: element.text,
                 file: element.file
-            }))
+            })})
     })      
 }
 
